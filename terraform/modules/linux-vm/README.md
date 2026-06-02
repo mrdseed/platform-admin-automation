@@ -1,57 +1,46 @@
 # Linux VM Module
 
-Standardized Linux virtual machine with Trusted Launch, SSH key authentication, managed identity attachment, and Azure Monitor Agent.
+Standardized Linux VM with **private IP only** — no public IP resource exists in this module.
 
-**No public IP** — this module creates private NICs only. Remote access is via Azure Bastion or approved private paths.
+## Security Defaults
+
+| Control | Default |
+|---------|---------|
+| Public IP | Not supported |
+| Password auth | Disabled |
+| Trusted Launch | Enabled (Secure Boot + vTPM) |
+| SSH | Key-based only |
 
 ## Usage
 
 ```hcl
-module "vm_app_prod" {
+module "linux_vm" {
   source = "../../modules/linux-vm"
 
   name                = "vm-app-prod-eus2-001"
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  subnet_id           = module.vnet.subnet_ids["snet-app-prod-eus2-001"]
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  subnet_id           = module.subnet_app.id
+  tags                = module.resource_group.tags
 
   vm_size        = "Standard_D4s_v5"
-  ssh_public_key = var.admin_ssh_public_key
+  ssh_public_key = var.ssh_public_key
 
-  user_assigned_identity_ids = [azurerm_user_assigned_identity.app.id]
-  log_analytics_workspace_id = data.azurerm_log_analytics_workspace.platform.id
-
-  cloud_init_data = file("${path.module}/cloud-init.yaml.tpl")
-
-  tags = module.rg.tags
+  user_assigned_identity_ids    = [module.app_identity.id]
+  log_analytics_workspace_guid  = module.log_analytics.workspace_id
 }
 ```
 
-## Required Pipeline Permissions
+Access the VM via **Azure Bastion** or a private jump host — never via public IP.
 
-Assign [PlatformDeploy-Compute](../../security/custom-rbac/deployment-sp-compute-role.json) — not Contributor:
+## Required RBAC
 
-| Permission | Why |
-|------------|-----|
-| `Microsoft.Compute/virtualMachines/write` | Create/update VM |
-| `Microsoft.Network/networkInterfaces/join/action` | Attach private NIC |
-| `Microsoft.ManagedIdentity/userAssignedIdentities/assign/action` | Attach workload MI |
+`PlatformDeploy-Compute` custom role.
 
-Explicitly **excluded**: `Microsoft.Network/publicIPAddresses/*`
+## Outputs
 
-## Security Notes
-
-- No password authentication; SSH keys only
-- No public IP created or attachable via this module
-- Access via Bastion in hub VNet — see [examples/no-public-ip/](../../examples/no-public-ip/)
-- Trusted Launch enabled by default (Secure Boot + vTPM)
-- Apply Ansible hardening before image capture — see [ansible/](../../ansible/)
-
-## Post-Deploy Hardening
-
-For golden images, run Ansible playbooks after base deploy:
-
-```bash
-ansible-playbook -i inventory/build.yml ansible/playbooks/baseline-hardening.yml
-ansible-playbook -i inventory/build.yml ansible/playbooks/validate-image.yml
-```
+| Name | Description |
+|------|-------------|
+| private_ip_address | Private NIC IP |
+| id | VM ARM ID |
+| network_interface_id | NIC ARM ID |

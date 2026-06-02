@@ -1,6 +1,6 @@
 # Network Security Group Module
 
-Creates an NSG with optional rules and subnet associations. Default posture: deny inbound from Internet unless rules are explicitly added.
+Creates an NSG with optional rules and subnet associations. By default, denies inbound traffic from the Internet.
 
 ## Usage
 
@@ -8,31 +8,37 @@ Creates an NSG with optional rules and subnet associations. Default posture: den
 module "nsg_app" {
   source = "../../modules/network-security-group"
 
-  name                = "nsg-app-dev-eus2-001"
+  name                = "nsg-app-prod-eus2-001"
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
-  environment         = "dev"
+  environment         = "prod"
   subnet_ids          = [module.subnet_app.id]
+  tags                = module.resource_group.tags
+
+  enable_default_deny_internet = true
 
   security_rules = [
     {
-      name                       = "DenyInboundInternet"
-      priority                   = 4096
+      name                       = "AllowBastionSSH"
+      priority                   = 100
       direction                  = "Inbound"
-      access                     = "Deny"
-      protocol                   = "*"
+      access                     = "Allow"
+      protocol                   = "Tcp"
       source_port_range          = "*"
-      destination_port_range     = "*"
-      source_address_prefix      = "Internet"
+      destination_port_range     = "22"
+      source_address_prefix      = "10.0.250.0/27"
       destination_address_prefix = "*"
-      description                = "Deny direct inbound from Internet"
+      description                = "SSH from hub bastion subnet only"
     }
   ]
-
-  tags = local.platform_tags
 }
 ```
 
+## Security Defaults
+
+- `enable_default_deny_internet = true` adds priority 4096 deny rule for inbound Internet traffic
+- No public IP is created by this module
+
 ## Required RBAC
 
-`PlatformDeploy-Network` custom role — not Contributor.
+`PlatformDeploy-Network` custom role.

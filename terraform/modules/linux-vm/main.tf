@@ -1,3 +1,6 @@
+# Private IP only — no azurerm_public_ip resource is created or supported by this module.
+# Remote access: Azure Bastion, VPN, or private jump hosts.
+
 resource "azurerm_network_interface" "this" {
   name                = "nic-${var.name}"
   location            = var.location
@@ -7,7 +10,8 @@ resource "azurerm_network_interface" "this" {
   ip_configuration {
     name                          = "internal"
     subnet_id                     = var.subnet_id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = var.private_ip_address != null ? "Static" : "Dynamic"
+    private_ip_address            = var.private_ip_address
   }
 }
 
@@ -21,9 +25,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   patch_assessment_mode           = var.patch_assessment_mode
   tags                            = var.tags
 
-  network_interface_ids = [
-    azurerm_network_interface.this.id,
-  ]
+  network_interface_ids = [azurerm_network_interface.this.id]
 
   admin_ssh_key {
     username   = var.admin_username
@@ -59,14 +61,12 @@ resource "azurerm_linux_virtual_machine" "this" {
   custom_data = var.cloud_init_data != null ? base64encode(var.cloud_init_data) : null
 
   lifecycle {
-    ignore_changes = [
-      custom_data,
-    ]
+    ignore_changes = [custom_data]
   }
 }
 
 resource "azurerm_virtual_machine_extension" "azure_monitor_agent" {
-  count = var.enable_azure_monitor_agent && var.log_analytics_workspace_id != null ? 1 : 0
+  count = var.enable_azure_monitor_agent && var.log_analytics_workspace_guid != null ? 1 : 0
 
   name                       = "AzureMonitorLinuxAgent"
   virtual_machine_id         = azurerm_linux_virtual_machine.this.id
@@ -76,7 +76,7 @@ resource "azurerm_virtual_machine_extension" "azure_monitor_agent" {
   auto_upgrade_minor_version = true
 
   settings = jsonencode({
-    workspaceId = var.log_analytics_workspace_id
+    workspaceId = var.log_analytics_workspace_guid
   })
 }
 

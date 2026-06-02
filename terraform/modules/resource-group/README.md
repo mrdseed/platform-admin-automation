@@ -1,11 +1,17 @@
 # Resource Group Module
 
-Creates an Azure resource group with mandatory platform tags and optional CanNotDelete management lock.
+Creates an Azure resource group with mandatory platform tags and an optional CanNotDelete management lock.
+
+## Design Notes
+
+- Tags are built inside the module so every downstream resource inherits consistent metadata via `module.resource_group.tags`.
+- Production resource groups should set `enable_management_lock = true`.
+- Pipeline principals need `PlatformDeploy-*` custom roles — not Contributor.
 
 ## Usage
 
 ```hcl
-module "rg_spoke_prod" {
+module "resource_group" {
   source = "../../modules/resource-group"
 
   name             = "rg-platform-app-prod-eus2-001"
@@ -17,31 +23,37 @@ module "rg_spoke_prod" {
   data_classification = "confidential"
 
   enable_management_lock = true
+
+  additional_tags = {
+    PatchGroup = "linux-prod-monthly"
+  }
 }
 ```
-
-## Required RBAC
-
-Pipeline identity requires `Contributor` on subscription or target scope to create resource groups.
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| name | Resource group name | string | — | yes |
+| name | Resource group name (`rg-{workload}-{env}-{region}-{seq}`) | string | — | yes |
 | location | Azure region | string | `eastus2` | no |
 | environment | Environment tag value | string | — | yes |
 | cost_center | Cost center code | string | — | yes |
-| owner_email | Owner contact | string | — | yes |
+| owner_email | Owner contact email | string | — | yes |
 | application_name | Application identifier | string | — | yes |
 | data_classification | Data classification tag | string | `internal` | no |
-| enable_management_lock | Apply delete lock | bool | `false` | no |
+| additional_tags | Extra tags merged with mandatory set | map(string) | `{}` | no |
+| enable_management_lock | Apply CanNotDelete lock | bool | `false` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| id | Resource group ID |
+| id | Resource group ARM ID |
 | name | Resource group name |
 | location | Region |
-| tags | Applied tags map |
+| tags | Platform tag map for child modules |
+| management_lock_id | Lock ID if enabled |
+
+## Required RBAC
+
+`Microsoft.Resources/subscriptions/resourceGroups/write` via scoped custom role.

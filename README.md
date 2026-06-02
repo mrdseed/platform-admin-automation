@@ -118,6 +118,7 @@ Full index: [terraform/modules/README.md](terraform/modules/README.md)
 | Linux VM standardization | [examples/linux-vm-standardization/](examples/linux-vm-standardization/) |
 | SFTP transfer platform | [examples/sftp-platform/](examples/sftp-platform/) |
 | No public IP standard | [examples/no-public-ip/](examples/no-public-ip/) |
+| **Secure platform baseline** | [examples/secure-platform-baseline/](examples/secure-platform-baseline/) |
 
 ## CI/CD
 

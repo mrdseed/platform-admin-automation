@@ -6,17 +6,17 @@ resource "azurerm_private_endpoint" "this" {
   tags                = var.tags
 
   private_service_connection {
-    name                           = "psc-${var.name}"
+    name                           = coalesce(var.connection_name, "psc-${var.name}")
     private_connection_resource_id = var.private_connection_resource_id
     subresource_names              = var.subresource_names
-    is_manual_connection           = false
+    is_manual_connection           = var.is_manual_connection
   }
 
   dynamic "private_dns_zone_group" {
     for_each = length(var.private_dns_zone_ids) > 0 ? [1] : []
 
     content {
-      name                 = "default"
+      name                 = coalesce(var.dns_zone_group_name, "default")
       private_dns_zone_ids = var.private_dns_zone_ids
     }
   }

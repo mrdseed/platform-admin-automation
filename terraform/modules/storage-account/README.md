@@ -1,6 +1,16 @@
 # Storage Account Module
 
-Private-first storage account with public blob access disabled by default.
+Private-first storage account with blob soft delete, optional SFTP, and diagnostic settings.
+
+## Security Defaults
+
+| Setting | Default |
+|---------|---------|
+| `public_network_access_enabled` | `false` |
+| `allow_nested_items_to_be_public` | `false` |
+| `shared_access_key_enabled` | `false` |
+| `min_tls_version` | `TLS1_2` |
+| Network rules | Deny when public access disabled |
 
 ## Usage
 
@@ -8,27 +18,20 @@ Private-first storage account with public blob access disabled by default.
 module "storage" {
   source = "../../modules/storage-account"
 
-  name                = "stplatformdev001"
+  name                = "stplatformprod001"
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
-  environment         = "dev"
-
-  public_network_access_enabled   = false
-  allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = false
+  environment         = "prod"
+  tags                = module.resource_group.tags
 
   log_analytics_workspace_id = module.log_analytics.id
-  tags                       = local.platform_tags
+}
+
+module "pe_storage" {
+  source = "../../modules/private-endpoint"
+  # ...
 }
 ```
-
-Pair with [private-endpoint](../private-endpoint/) for private access.
-
-## Security Defaults
-
-- `allow_nested_items_to_be_public = false`
-- `public_network_access_enabled = false`
-- No public IP or anonymous blob access
 
 ## Required RBAC
 

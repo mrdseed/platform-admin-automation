@@ -23,5 +23,5 @@ resource "azurerm_management_lock" "this" {
   name       = var.lock_name
   scope      = azurerm_resource_group.this.id
   lock_level = "CanNotDelete"
-  notes      = "Managed by platform-admin-automation. Prevents accidental deletion."
+  notes      = "Platform-managed resource group. Deletion requires lock removal via IaC."
 }

@@ -1,14 +1,3 @@
-terraform {
-  required_version = ">= 1.6.0"
-
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.90"
-    }
-  }
-}
-
 variable "name" {
   description = "Managed identity name: id-{workload}-{env}-{seq}"
   type        = string

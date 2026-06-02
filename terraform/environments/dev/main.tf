@@ -76,7 +76,6 @@ module "subnet_app" {
   address_prefixes     = ["10.1.1.0/24"]
   environment          = local.environment
   service_endpoints    = ["Microsoft.KeyVault", "Microsoft.Storage"]
-  tags                 = local.platform_tags
 }
 
 module "subnet_pe" {
@@ -87,7 +86,6 @@ module "subnet_pe" {
   virtual_network_name = module.virtual_network.name
   address_prefixes     = ["10.1.240.0/27"]
   environment          = local.environment
-  tags                 = local.platform_tags
 }
 
 module "network_security_group_app" {
@@ -259,8 +257,8 @@ module "linux_vm" {
   vm_size        = "Standard_D2s_v5"
   ssh_public_key = var.admin_ssh_public_key
 
-  user_assigned_identity_ids = [module.app_identity.id]
-  log_analytics_workspace_id = module.log_analytics.id
+  user_assigned_identity_ids   = [module.app_identity.id]
+  log_analytics_workspace_guid = module.log_analytics.workspace_id
 
   tags = local.platform_tags
 }

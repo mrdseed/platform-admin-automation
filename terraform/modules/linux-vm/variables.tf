@@ -1,20 +1,28 @@
 variable "name" {
-  description = "VM name: vm-{app}-{env}-eus2-{seq}"
+  description = "VM name: vm-{app}-{env}-{region}-{seq}"
   type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group name"
+  type        = string
 }
 
 variable "location" {
-  type    = string
-  default = "eastus2"
+  description = "Azure region"
+  type        = string
+  default     = "eastus2"
 }
 
 variable "subnet_id" {
-  description = "Subnet ID for VM network interface"
+  description = "Private subnet ID — VM receives no public IP"
   type        = string
+}
+
+variable "private_ip_address" {
+  description = "Optional static private IP; null for dynamic allocation"
+  type        = string
+  default     = null
 }
 
 variable "vm_size" {
@@ -24,19 +32,19 @@ variable "vm_size" {
 }
 
 variable "admin_username" {
-  description = "Local admin username (SSH key auth only)"
+  description = "Local admin username (SSH key authentication only)"
   type        = string
   default     = "azureadmin"
 }
 
 variable "ssh_public_key" {
-  description = "SSH public key for admin access"
+  description = "SSH public key — supplied via pipeline variable, never hardcoded"
   type        = string
   sensitive   = true
 }
 
 variable "source_image_reference" {
-  description = "OS image reference"
+  description = "Marketplace or gallery image reference"
   type = object({
     publisher = string
     offer     = string
@@ -62,13 +70,13 @@ variable "os_disk_size_gb" {
 }
 
 variable "user_assigned_identity_ids" {
-  description = "User-assigned managed identity IDs to attach to VM"
+  description = "User-assigned managed identity resource IDs to attach"
   type        = list(string)
   default     = []
 }
 
 variable "cloud_init_data" {
-  description = "cloud-config content for custom data (base64 encoded by provider)"
+  description = "cloud-config payload applied at first boot"
   type        = string
   default     = null
 }
@@ -78,25 +86,24 @@ variable "enable_azure_monitor_agent" {
   default = true
 }
 
-variable "log_analytics_workspace_id" {
-  description = "Log Analytics workspace for AMA"
+variable "log_analytics_workspace_guid" {
+  description = "Log Analytics workspace GUID (workspace_id output) for Azure Monitor Agent"
   type        = string
   default     = null
 }
 
 variable "enable_trusted_launch" {
-  description = "Enable Secure Boot and vTPM"
+  description = "Enable Secure Boot and vTPM (Trusted Launch)"
   type        = bool
   default     = true
 }
 
 variable "patch_assessment_mode" {
-  description = "Azure Update Manager assessment mode"
-  type        = string
-  default     = "AutomaticByPlatform"
+  type    = string
+  default = "AutomaticByPlatform"
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Platform tags from resource group module"
+  type        = map(string)
 }
