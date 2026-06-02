@@ -1,83 +1,66 @@
 # Key Vault RBAC Example
 
-RBAC-only Key Vault deployment with private endpoint, managed identity access, and pipeline role separation.
-
-## Role Matrix
-
-| Principal | Role | Justification |
-|-----------|------|---------------|
-| `id-platform-tf-prod` (pipeline MI) | Key Vault Secrets Officer | Deploy and rotate secrets via IaC |
-| `id-platform-app-prod-001` (workload MI) | Key Vault Secrets User | Runtime secret read |
-| `grp-security-audit` (Entra group) | Key Vault Reader | Compliance audit — no secret read |
-| Break-glass admin group | Key Vault Administrator | Emergency access — PIM eligible |
+RBAC-only Key Vault with private endpoint and role-assignment modules.
 
 ## Usage
 
 ```hcl
-resource "azurerm_user_assigned_identity" "app" {
-  name                = "id-platform-app-prod-001"
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  tags                = module.rg.tags
-}
-
 module "key_vault" {
   source = "../../terraform/modules/key-vault"
 
   name                = "kv-platform-prod-eus2-001"
-  resource_group_name = module.rg.name
-  location            = module.rg.location
-  tenant_id           = data.azurerm_client_config.current.tenant_id
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  environment         = "prod"
+  tenant_id           = var.tenant_id
 
   public_network_access_enabled = false
   purge_protection_enabled      = true
+  log_analytics_workspace_id    = module.log_analytics.id
 
-  private_endpoint_subnet_id = module.vnet.subnet_ids["snet-pe-prod-eus2-001"]
-  private_dns_zone_ids         = [data.azurerm_private_dns_zone.kv.id]
+  tags = local.platform_tags
+}
 
-  rbac_assignments = {
+module "private_endpoint_key_vault" {
+  source = "../../terraform/modules/private-endpoint"
+
+  name                = "pe-kv-platform-prod-eus2-001"
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  environment         = "prod"
+  subnet_id           = module.subnet_pe.id
+
+  private_connection_resource_id = module.key_vault.id
+  subresource_names              = ["vault"]
+  private_dns_zone_ids             = [var.private_dns_zone_keyvault_id]
+
+  tags = local.platform_tags
+}
+
+module "key_vault_rbac" {
+  source = "../../terraform/modules/role-assignment"
+
+  assignments = {
     pipeline = {
-      principal_id         = var.pipeline_principal_id
+      scope                = module.key_vault.id
       role_definition_name = "Key Vault Secrets Officer"
+      principal_id         = var.pipeline_object_id
     }
     application = {
-      principal_id         = azurerm_user_assigned_identity.app.principal_id
+      scope                = module.key_vault.id
       role_definition_name = "Key Vault Secrets User"
+      principal_id         = module.app_identity.principal_id
     }
     audit = {
-      principal_id         = var.security_audit_group_object_id
+      scope                = module.key_vault.id
       role_definition_name = "Key Vault Reader"
+      principal_id         = var.security_audit_group_object_id
     }
   }
-
-  tags = module.rg.tags
 }
 ```
 
-## Secret Naming Convention
+## Related
 
-```
-{application}/{environment}/{secret-name}
-```
-
-Examples:
-- `platform-sftp/prod/partner-inbound-sftp-key`
-- `platform-app/prod/db-connection-string`
-
-## Anti-Patterns (Do Not Use)
-
-- Access policies instead of RBAC on new vaults
-- Granting `Key Vault Administrator` to workload identities
-- Public network access enabled in production
-- Storing secrets in `terraform.tfvars` or Git
-
-## Verification
-
-```bash
-# Confirm RBAC mode
-az keyvault show -n kv-platform-prod-eus2-001 \
-  --query "properties.enableRbacAuthorization"
-
-# List role assignments (requires Reader on vault)
-az role assignment list --scope $(az keyvault show -n kv-platform-prod-eus2-001 --query id -o tsv) -o table
-```
+- [security/custom-rbac/](../../security/custom-rbac/)
+- [role-assignment module](../../terraform/modules/role-assignment/)

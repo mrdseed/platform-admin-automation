@@ -1,0 +1,41 @@
+---
+# SSH hardening — run independently or as part of baseline
+- name: Harden SSH configuration
+  hosts: all
+  become: true
+  vars:
+    platform_ssh_port: 22
+    platform_allow_users:
+      - azureadmin
+
+  tasks:
+    - name: Deploy sshd hardening config
+      ansible.builtin.template:
+        src: roles/linux-baseline/templates/sshd_config.j2
+        dest: /etc/ssh/sshd_config.d/99-platform-hardening.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart sshd
+
+    - name: Ensure password authentication is disabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+        state: present
+      notify: Restart sshd
+
+    - name: Ensure root login is disabled
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+      notify: Restart sshd
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted

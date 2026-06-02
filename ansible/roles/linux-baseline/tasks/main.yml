@@ -1,0 +1,58 @@
+---
+- name: Update package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Upgrade installed packages
+  ansible.builtin.apt:
+    upgrade: dist
+  when: ansible_os_family == "Debian"
+  notify: Set reboot required fact
+
+- name: Install baseline packages
+  ansible.builtin.package:
+    name:
+      - auditd
+      - audispd-plugins
+      - rsyslog
+      - fail2ban
+      - aide
+    state: present
+
+- name: Deploy SSH hardening configuration
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config.d/99-platform-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart sshd
+
+- name: Enable and configure fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: platform_enable_fail2ban
+
+- name: Initialize AIDE database
+  ansible.builtin.command: aideinit
+  args:
+    creates: /var/lib/aide/aide.db
+  when: platform_enable_aide
+  changed_when: false
+
+- name: Set kernel hardening sysctl
+  ansible.builtin.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-platform.conf
+    reload: true
+  loop:
+    - { key: net.ipv4.conf.all.rp_filter, value: "1" }
+    - { key: net.ipv4.conf.default.rp_filter, value: "1" }
+    - { key: net.ipv4.icmp_echo_ignore_broadcasts, value: "1" }
+    - { key: net.ipv4.conf.all.accept_redirects, value: "0" }
+    - { key: net.ipv4.conf.all.send_redirects, value: "0" }

@@ -1,0 +1,34 @@
+{
+  "Name": "PlatformDeploy-Storage",
+  "Description": "Deploy storage accounts including SFTP-enabled accounts and private endpoints. No shared key regeneration in routine deploys.",
+  "Actions": [
+    "Microsoft.Storage/storageAccounts/read",
+    "Microsoft.Storage/storageAccounts/write",
+    "Microsoft.Storage/storageAccounts/delete",
+    "Microsoft.Storage/storageAccounts/listKeys/action",
+    "Microsoft.Storage/storageAccounts/localUsers/read",
+    "Microsoft.Storage/storageAccounts/localUsers/write",
+    "Microsoft.Storage/storageAccounts/localUsers/delete",
+    "Microsoft.Storage/storageAccounts/blobServices/read",
+    "Microsoft.Storage/storageAccounts/blobServices/write",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+    "Microsoft.Network/privateEndpoints/read",
+    "Microsoft.Network/privateEndpoints/write",
+    "Microsoft.Insights/diagnosticSettings/read",
+    "Microsoft.Insights/diagnosticSettings/write",
+    "Microsoft.Resources/subscriptions/resourceGroups/read"
+  ],
+  "NotActions": [
+    "Microsoft.Storage/storageAccounts/regenerateKey/action"
+  ],
+  "DataActions": [
+    "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+    "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete"
+  ],
+  "NotDataActions": [],
+  "AssignableScopes": [
+    "/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}"
+  ]
+}

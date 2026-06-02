@@ -40,10 +40,6 @@ variable "hub_firewall_private_ip" {
   default = "10.0.1.4"
 }
 
-variable "log_analytics_workspace_id" {
-  type = string
-}
-
 variable "pipeline_object_id" {
   type = string
 }
@@ -54,13 +50,11 @@ variable "admin_ssh_public_key" {
 }
 
 variable "private_dns_zone_keyvault_id" {
-  description = "Hub private DNS zone for Key Vault"
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }
 
 variable "private_dns_zone_blob_id" {
-  description = "Hub private DNS zone for blob storage"
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }

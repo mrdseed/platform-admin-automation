@@ -45,6 +45,22 @@ Optional but recommended: `BackupTier`, `PatchGroup`, `ExpirationDate` (for non-
 
 ## 4. Security Standards
 
+See [Security & Governance](security-governance.md) for the full standard.
+
+### No Public IP on Workloads
+
+- Workload VMs must not receive public IP addresses
+- The `linux-vm` module does not create or attach public IPs
+- Remote access via Azure Bastion, VPN, ExpressRoute, or private jump hosts
+- Exceptions require architecture approval — see [security/policy-examples/deny-public-ip.md](../security/policy-examples/deny-public-ip.md)
+
+### Least-Privilege RBAC
+
+- **Do not** assign Owner or Contributor to deployment service principals
+- Use custom roles in [security/custom-rbac/](../security/custom-rbac/)
+- Document required permissions per pipeline in role README
+- User and group assignments managed via [security/access-management/users-groups.yml](../security/access-management/users-groups.yml)
+
 ### Secrets Management
 
 - Store secrets in Key Vault; reference via managed identity at runtime
@@ -60,9 +76,16 @@ Optional but recommended: `BackupTier`, `PatchGroup`, `ExpirationDate` (for non-
 ### RBAC
 
 - Prefer managed identities over service principals
-- Use custom roles when built-in roles are overly permissive
+- Use custom roles when built-in roles are overly permissive — never Contributor for automation
 - Role assignments at lowest applicable scope (resource > RG > subscription)
 - Quarterly access review via Entra ID Access Reviews
+- Manual portal RBAC changes corrected by [access-sync pipeline](../.github/workflows/access-sync.yml)
+
+### Image Hardening
+
+- Linux images hardened with [ansible/](../ansible/) playbooks before gallery capture
+- Run `validate-image.yml` before promoting images between environments
+- No manual configuration on golden images
 
 ## 5. CI/CD Standards
 

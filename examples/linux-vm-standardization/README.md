@@ -70,10 +70,20 @@ resource "azurerm_maintenance_assignment_virtual_machine" "app" {
 }
 ```
 
-## Compliance Alignment
+## Post-Deploy Hardening
 
-- Azure Policy: `Deploy-Linux-AMA`
-- CIS Ubuntu 22.04 L1 — partial automation via cloud-init; remainder via Azure Guest Configuration (planned Q3 2026)
+Images should be hardened with Ansible before gallery capture:
+
+```bash
+ansible-playbook -i inventory/build.yml ansible/playbooks/baseline-hardening.yml
+ansible-playbook -i inventory/build.yml ansible/playbooks/validate-image.yml
+```
+
+See [ansible/README.md](../../ansible/README.md) for build → test → promote workflow.
+
+## No Public IP
+
+This pattern uses the `linux-vm` module which does not attach public IPs. Access via Bastion only — [examples/no-public-ip/](../no-public-ip/).
 
 ## Related Runbook
 

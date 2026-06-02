@@ -1,0 +1,13 @@
+# Platform SSH hardening — managed by Ansible
+Port {{ platform_ssh_port }}
+Protocol 2
+PermitRootLogin no
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM yes
+X11Forwarding no
+PrintMotd no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3
+AllowUsers {{ platform_allow_users | join(' ') }}

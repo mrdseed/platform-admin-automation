@@ -1,11 +1,9 @@
 variable "subscription_id" {
-  description = "Azure subscription ID for dev workloads"
-  type        = string
+  type = string
 }
 
 variable "tenant_id" {
-  description = "Azure Entra ID tenant ID"
-  type        = string
+  type = string
 }
 
 variable "location" {
@@ -24,8 +22,7 @@ variable "owner_email" {
 }
 
 variable "hub_vnet_id" {
-  description = "Hub VNet ID for spoke peering"
-  type        = string
+  type = string
 }
 
 variable "hub_resource_group_name" {
@@ -43,19 +40,21 @@ variable "hub_firewall_private_ip" {
   default = "10.0.1.4"
 }
 
-variable "log_analytics_workspace_id" {
-  description = "Central Log Analytics workspace resource ID"
-  type        = string
-  default     = null
-}
-
 variable "pipeline_object_id" {
-  description = "Object ID of Terraform pipeline service principal or managed identity"
-  type        = string
+  type = string
 }
 
 variable "admin_ssh_public_key" {
-  description = "SSH public key for standardized Linux VMs"
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
+}
+
+variable "private_dns_zone_keyvault_id" {
+  type    = string
+  default = null
+}
+
+variable "private_dns_zone_blob_id" {
+  type    = string
+  default = null
 }

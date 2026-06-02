@@ -191,6 +191,7 @@ Azure Policy initiatives assigned at management group level:
 
 ## Related Documents
 
+- [Security & Governance](security-governance.md)
 - [Operational Runbook](runbook.md)
 - [Platform Principles](platform-principles.md)
 - [Project Roadmap](project-roadmap.md)

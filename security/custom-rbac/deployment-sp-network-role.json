@@ -1,0 +1,47 @@
+{
+  "Name": "PlatformDeploy-Network",
+  "Description": "Deploy and manage network resources for platform Terraform pipelines. Does not include public IP creation on workload subnets.",
+  "Actions": [
+    "Microsoft.Network/virtualNetworks/read",
+    "Microsoft.Network/virtualNetworks/write",
+    "Microsoft.Network/virtualNetworks/delete",
+    "Microsoft.Network/virtualNetworks/peer/action",
+    "Microsoft.Network/virtualNetworks/subnets/read",
+    "Microsoft.Network/virtualNetworks/subnets/write",
+    "Microsoft.Network/virtualNetworks/subnets/delete",
+    "Microsoft.Network/networkSecurityGroups/read",
+    "Microsoft.Network/networkSecurityGroups/write",
+    "Microsoft.Network/networkSecurityGroups/delete",
+    "Microsoft.Network/networkSecurityGroups/securityRules/read",
+    "Microsoft.Network/networkSecurityGroups/securityRules/write",
+    "Microsoft.Network/networkSecurityGroups/securityRules/delete",
+    "Microsoft.Network/networkInterfaces/read",
+    "Microsoft.Network/networkInterfaces/write",
+    "Microsoft.Network/networkInterfaces/delete",
+    "Microsoft.Network/networkInterfaces/join/action",
+    "Microsoft.Network/routeTables/read",
+    "Microsoft.Network/routeTables/write",
+    "Microsoft.Network/routeTables/delete",
+    "Microsoft.Network/routeTables/routes/read",
+    "Microsoft.Network/routeTables/routes/write",
+    "Microsoft.Network/routeTables/routes/delete",
+    "Microsoft.Network/privateEndpoints/read",
+    "Microsoft.Network/privateEndpoints/write",
+    "Microsoft.Network/privateEndpoints/delete",
+    "Microsoft.Network/privateDnsZones/read",
+    "Microsoft.Network/privateDnsZones/virtualNetworkLinks/read",
+    "Microsoft.Network/privateDnsZones/virtualNetworkLinks/write",
+    "Microsoft.Network/privateDnsZones/A/read",
+    "Microsoft.Network/privateDnsZones/A/write",
+    "Microsoft.Resources/subscriptions/resourceGroups/read"
+  ],
+  "NotActions": [
+    "Microsoft.Network/publicIPAddresses/write",
+    "Microsoft.Network/publicIPAddresses/delete"
+  ],
+  "DataActions": [],
+  "NotDataActions": [],
+  "AssignableScopes": [
+    "/subscriptions/{subscription-id}"
+  ]
+}

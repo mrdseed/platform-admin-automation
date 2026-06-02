@@ -1,0 +1,17 @@
+---
+# Full Linux baseline hardening for platform golden images
+- name: Apply platform Linux baseline
+  hosts: all
+  become: true
+  vars:
+    platform_ssh_port: 22
+    platform_allow_users:
+      - azureadmin
+  roles:
+    - linux-baseline
+
+  post_tasks:
+    - name: Require reboot if kernel updated
+      ansible.builtin.debug:
+        msg: "Reboot required before image capture"
+      when: reboot_required | default(false)

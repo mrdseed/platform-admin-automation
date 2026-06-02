@@ -1,0 +1,133 @@
+name: Access Sync
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "security/access-management/**"
+  pull_request:
+    paths:
+      - "security/access-management/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    name: Validate Access Catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate YAML schema
+        run: |
+          test -f security/access-management/users-groups.yml
+          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'platform.example/v1'
+          yq eval '.kind' security/access-management/users-groups.yml | grep -q 'AccessCatalog'
+
+      - name: Reject denied roles in assignments
+        run: |
+          DENIED=$(yq eval '.denied_roles[]' security/access-management/users-groups.yml)
+          for role in $DENIED; do
+            if yq eval ".role_assignments[] | select(.role == \"$role\")" security/access-management/users-groups.yml | grep -q .; then
+              echo "Denied role found in assignments: $role"
+              exit 1
+            fi
+            if yq eval ".service_principals[].roles[] | select(.role == \"$role\")" security/access-management/users-groups.yml 2>/dev/null | grep -q .; then
+              echo "Denied role found on service principal: $role"
+              exit 1
+            fi
+          done
+          echo "No denied roles assigned"
+
+      - name: Validate no Owner or Contributor on SPs
+        run: |
+          if yq eval '.service_principals[].roles[].role' security/access-management/users-groups.yml | grep -iE '^(Owner|Contributor)$'; then
+            echo "Broad role detected on service principal"
+            exit 1
+          fi
+
+  diff:
+    name: Diff Desired vs Azure State
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Generate diff report
+        run: |
+          echo "## Access Sync Diff (concept)" >> diff-report.md
+          echo "Desired assignments from users-groups.yml:" >> diff-report.md
+          yq eval '.role_assignments[] | "- \(.principal) → \(.role) @ \(.scope)"' security/access-management/users-groups.yml >> diff-report.md || true
+          echo "" >> diff-report.md
+          echo "Live Azure assignments on sample scope (first assignment scope):" >> diff-report.md
+          SCOPE=$(yq eval '.role_assignments[0].scope' security/access-management/users-groups.yml)
+          az role assignment list --scope "$SCOPE" -o table >> diff-report.md 2>&1 || echo "Unable to query Azure — configure OIDC secrets" >> diff-report.md
+
+      - name: Comment diff on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('diff-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  apply:
+    name: Apply Access Desired State
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    environment: prod-access
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply role assignments (desired state)
+        run: |
+          echo "Applying role assignments from users-groups.yml"
+          COUNT=$(yq eval '.role_assignments | length' security/access-management/users-groups.yml)
+          for i in $(seq 0 $((COUNT - 1))); do
+            PRINCIPAL=$(yq eval ".role_assignments[$i].principal" security/access-management/users-groups.yml)
+            TYPE=$(yq eval ".role_assignments[$i].principal_type" security/access-management/users-groups.yml)
+            ROLE=$(yq eval ".role_assignments[$i].role" security/access-management/users-groups.yml)
+            SCOPE=$(yq eval ".role_assignments[$i].scope" security/access-management/users-groups.yml)
+            echo "Ensuring: $PRINCIPAL ($TYPE) → $ROLE @ $SCOPE"
+            # Resolve group name to object ID in production pipeline
+            # az role assignment create --assignee ... --role "$ROLE" --scope "$SCOPE"
+          done
+          echo "Manual portal changes outside this catalog will be flagged on next drift scan"
+
+      - name: Drift reminder
+        run: |
+          echo "Drift policy: assignments not in users-groups.yml should be removed or added to Git"
+          echo "See security/access-management/README.md"

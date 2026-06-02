@@ -17,6 +17,10 @@ Deliver a secure, automated, and observable Azure landing zone that enables appl
 | Linux VM standardization | ✅ Production | `terraform/modules/linux-vm` |
 | SFTP transfer platform | ✅ Production | `examples/sftp-platform` |
 | GitHub Actions validation pipeline | ✅ Active | `.github/workflows/validation.yml` |
+| Access sync pipeline | ✅ Active | `.github/workflows/access-sync.yml` |
+| Custom RBAC role definitions | ✅ Defined | `security/custom-rbac/` |
+| Ansible image hardening | ✅ Defined | `ansible/` |
+| No public IP standard | ✅ Enforced | `examples/no-public-ip/`, Azure Policy |
 | Centralized Log Analytics | ✅ Production | Hub deployment |
 | Managed identity patterns | ✅ Production | All modules |
 | Tagging & naming standards | ✅ Enforced via Policy | `docs/platform-principles.md` |

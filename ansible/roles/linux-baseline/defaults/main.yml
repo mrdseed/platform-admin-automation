@@ -1,0 +1,6 @@
+---
+platform_ssh_port: 22
+platform_allow_users:
+  - azureadmin
+platform_enable_fail2ban: true
+platform_enable_aide: true

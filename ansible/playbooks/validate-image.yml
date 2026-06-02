@@ -1,0 +1,70 @@
+---
+# Validate hardened image before gallery capture or promotion
+- name: Validate platform Linux image
+  hosts: all
+  become: true
+  vars:
+    platform_required_packages:
+      - auditd
+      - rsyslog
+      - fail2ban
+    platform_forbidden_packages:
+      - telnet
+      - rsh-client
+
+  tasks:
+    - name: Assert SSH password auth disabled
+      ansible.builtin.command: sshd -T
+      register: sshd_config_test
+      changed_when: false
+
+    - name: Check PasswordAuthentication
+      ansible.builtin.assert:
+        that:
+          - "'passwordauthentication no' in sshd_config_test.stdout | lower"
+        fail_msg: "PasswordAuthentication must be disabled"
+
+    - name: Check PermitRootLogin
+      ansible.builtin.assert:
+        that:
+          - "'permitrootlogin no' in sshd_config_test.stdout | lower"
+        fail_msg: "PermitRootLogin must be disabled"
+
+    - name: Assert required packages installed
+      ansible.builtin.package:
+        name: "{{ platform_required_packages }}"
+        state: present
+      check_mode: true
+      register: required_pkg_check
+      failed_when: required_pkg_check.changed
+
+    - name: Assert forbidden packages absent
+      ansible.builtin.package:
+        name: "{{ platform_forbidden_packages }}"
+        state: absent
+      check_mode: true
+      register: forbidden_pkg_check
+      failed_when: forbidden_pkg_check.changed
+
+    - name: Assert auditd running
+      ansible.builtin.service:
+        name: auditd
+        state: started
+      check_mode: true
+      register: auditd_status
+      failed_when: auditd_status.changed
+
+    - name: Check no unexpected listening ports
+      ansible.builtin.command: ss -tlnp
+      register: listening_ports
+      changed_when: false
+
+    - name: Assert SSH is only on port 22
+      ansible.builtin.assert:
+        that:
+          - listening_ports.stdout is search(':22 ')
+        fail_msg: "SSH must listen on port 22 only for baseline images"
+
+    - name: Validation summary
+      ansible.builtin.debug:
+        msg: "Image validation passed — ready for capture/promotion"

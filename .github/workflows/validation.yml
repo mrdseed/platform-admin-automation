@@ -5,11 +5,15 @@ on:
     branches: [main]
     paths:
       - "terraform/**"
+      - "security/**"
+      - "ansible/**"
       - ".github/workflows/validation.yml"
   push:
     branches: [main]
     paths:
       - "terraform/**"
+      - "security/**"
+      - "ansible/**"
 
 permissions:
   contents: read
@@ -48,8 +52,16 @@ jobs:
         module:
           - resource-group
           - virtual-network
+          - subnet
+          - network-security-group
+          - route-table
+          - storage-account
           - key-vault
           - linux-vm
+          - managed-identity
+          - role-assignment
+          - private-endpoint
+          - log-analytics-workspace
     steps:
       - uses: actions/checkout@v4
 
@@ -128,10 +140,52 @@ jobs:
           tofu init -backend=false
           tofu validate
 
+  security-governance:
+    name: Security Governance Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject public IP in workload modules
+        run: |
+          if grep -r 'azurerm_public_ip' terraform/modules/linux-vm terraform/environments/ 2>/dev/null; then
+            echo "azurerm_public_ip found in workload paths — violates no-public-IP standard"
+            exit 1
+          fi
+          echo "No public IP resources in workload modules"
+
+      - name: Install yq
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate access catalog
+        run: |
+          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'platform.example/v1'
+          for role in Owner Contributor "User Access Administrator"; do
+            if yq eval ".role_assignments[] | select(.role == \"$role\")" security/access-management/users-groups.yml | grep -q .; then
+              echo "Denied role in catalog: $role"
+              exit 1
+            fi
+          done
+
+      - name: Validate custom RBAC JSON
+        run: |
+          for f in security/custom-rbac/deployment-sp-*.json; do
+            python3 -c "import json; json.load(open('$f'))"
+            echo "Valid: $f"
+          done
+
+      - name: Ansible playbook syntax check
+        run: |
+          pip install ansible-core --quiet
+          cd ansible
+          for pb in playbooks/*.yml; do
+            ansible-playbook "$pb" --syntax-check
+          done
+
   plan-dev:
     name: Plan — Dev (OIDC)
     runs-on: ubuntu-latest
-    needs: [validate-environments, checkov]
+    needs: [validate-environments, checkov, security-governance]
     if: github.event_name == 'pull_request'
     environment: dev
     steps:

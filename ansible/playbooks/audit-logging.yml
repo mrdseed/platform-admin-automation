@@ -1,0 +1,61 @@
+---
+# Configure auditd and rsyslog for platform compliance
+- name: Configure audit logging and log forwarding
+  hosts: all
+  become: true
+  vars:
+    platform_audit_rules:
+      - "-w /etc/passwd -p wa -k identity"
+      - "-w /etc/shadow -p wa -k identity"
+      - "-w /etc/sudoers -p wa -k scope"
+      - "-a always,exit -F arch=b64 -S execve -k exec"
+    platform_rsyslog_forward: "10.0.2.10:514"
+
+  tasks:
+    - name: Install auditd and rsyslog
+      ansible.builtin.package:
+        name:
+          - auditd
+          - audispd-plugins
+          - rsyslog
+        state: present
+
+    - name: Deploy audit rules
+      ansible.builtin.copy:
+        dest: /etc/audit/rules.d/platform.rules
+        content: |
+          {% for rule in platform_audit_rules %}
+          {{ rule }}
+          {% endfor %}
+        mode: "0640"
+      notify: Reload audit rules
+
+    - name: Enable and start auditd
+      ansible.builtin.service:
+        name: auditd
+        state: started
+        enabled: true
+
+    - name: Configure rsyslog forwarding
+      ansible.builtin.copy:
+        dest: /etc/rsyslog.d/99-platform-forward.conf
+        content: |
+          *.* @@{{ platform_rsyslog_forward }}
+        mode: "0644"
+      notify: Restart rsyslog
+
+    - name: Enable and start rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Reload audit rules
+      ansible.builtin.command: augenrules --load
+      changed_when: true
+
+    - name: Restart rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: restarted

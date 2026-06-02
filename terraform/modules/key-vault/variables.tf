@@ -17,20 +17,18 @@ variable "location" {
   default = "eastus2"
 }
 
+variable "environment" {
+  type = string
+}
+
 variable "tenant_id" {
-  description = "Azure Entra ID tenant ID"
+  description = "Azure Entra ID tenant ID — supplied via variable, never hardcoded"
   type        = string
 }
 
 variable "sku_name" {
-  description = "Key Vault SKU: standard or premium"
-  type        = string
-  default     = "standard"
-
-  validation {
-    condition     = contains(["standard", "premium"], var.sku_name)
-    error_message = "SKU must be standard or premium."
-  }
+  type    = string
+  default = "standard"
 }
 
 variable "soft_delete_retention_days" {
@@ -39,46 +37,21 @@ variable "soft_delete_retention_days" {
 }
 
 variable "purge_protection_enabled" {
-  description = "Enable purge protection (required for prod)"
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "public_network_access_enabled" {
-  description = "Allow public network access (should be false in prod)"
+  description = "Must be false for production — use private-endpoint module"
   type        = bool
   default     = false
 }
 
-variable "rbac_assignments" {
-  description = "Map of RBAC role assignments on the vault"
-  type = map(object({
-    principal_id         = string
-    role_definition_name = string
-    description          = optional(string, "")
-  }))
-  default = {}
-}
-
-variable "private_endpoint_subnet_id" {
-  description = "Subnet ID for private endpoint (required when public access disabled)"
-  type        = string
-  default     = null
-}
-
-variable "private_dns_zone_ids" {
-  description = "Private DNS zone IDs for vault private link"
-  type        = list(string)
-  default     = []
-}
-
 variable "log_analytics_workspace_id" {
-  description = "Log Analytics workspace for diagnostic settings"
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  type = map(string)
 }
