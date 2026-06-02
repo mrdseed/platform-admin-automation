@@ -50,6 +50,11 @@ variable "data_classification" {
   }
 }
 
+variable "business_unit" {
+  description = "Business unit or division for chargeback and policy (business-unit tag)"
+  type        = string
+}
+
 variable "additional_tags" {
   description = "Optional supplementary tags merged with mandatory platform tags"
   type        = map(string)

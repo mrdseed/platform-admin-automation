@@ -1,12 +1,20 @@
 # Resource Group Module
 
-Creates an Azure resource group with mandatory platform tags and an optional CanNotDelete management lock.
+Creates an Azure resource group with **seven mandatory platform tags** and an optional CanNotDelete management lock.
 
-## Design Notes
+## Mandatory Tags Applied
 
-- Tags are built inside the module so every downstream resource inherits consistent metadata via `module.resource_group.tags`.
-- Production resource groups should set `enable_management_lock = true`.
-- Pipeline principals need `PlatformDeploy-*` custom roles — not Contributor.
+| Tag Key | Variable |
+|---------|----------|
+| `environment` | `var.environment` |
+| `application` | `var.application_name` |
+| `owner` | `var.owner_email` |
+| `cost-center` | `var.cost_center` |
+| `data-classification` | `var.data_classification` |
+| `managed-by` | `terraform` (fixed) |
+| `business-unit` | `var.business_unit` |
+
+Pass `module.resource_group.tags` to all downstream modules.
 
 ## Usage
 
@@ -20,40 +28,22 @@ module "resource_group" {
   cost_center      = "CC-1042"
   owner_email      = "platform-team@example.com"
   application_name = "platform-app"
+  business_unit    = "engineering"
   data_classification = "confidential"
 
   enable_management_lock = true
-
-  additional_tags = {
-    PatchGroup = "linux-prod-monthly"
-  }
 }
 ```
-
-## Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| name | Resource group name (`rg-{workload}-{env}-{region}-{seq}`) | string | — | yes |
-| location | Azure region | string | `eastus2` | no |
-| environment | Environment tag value | string | — | yes |
-| cost_center | Cost center code | string | — | yes |
-| owner_email | Owner contact email | string | — | yes |
-| application_name | Application identifier | string | — | yes |
-| data_classification | Data classification tag | string | `internal` | no |
-| additional_tags | Extra tags merged with mandatory set | map(string) | `{}` | no |
-| enable_management_lock | Apply CanNotDelete lock | bool | `false` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| tags | Tag map for all child modules |
 | id | Resource group ARM ID |
 | name | Resource group name |
-| location | Region |
-| tags | Platform tag map for child modules |
-| management_lock_id | Lock ID if enabled |
 
-## Required RBAC
+## Governance
 
-`Microsoft.Resources/subscriptions/resourceGroups/write` via scoped custom role.
+- [Platform Governance](../../../docs/platform-governance.md#1-mandatory-tags)
+- [Required Tags Policy](../../../security/policy-examples/required-tags.md)

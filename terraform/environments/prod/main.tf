@@ -8,14 +8,6 @@ locals {
   data_classification  = "confidential"
   hub_firewall_enabled = var.hub_firewall_private_ip != null
 
-  platform_tags = {
-    Environment        = local.environment
-    CostCenter         = var.cost_center
-    Owner              = var.owner_email
-    Application        = local.application_name
-    ManagedBy          = "terraform"
-    DataClassification = local.data_classification
-  }
 }
 
 # --- Resource Group ---
@@ -29,6 +21,7 @@ module "resource_group" {
   cost_center         = var.cost_center
   owner_email         = var.owner_email
   application_name    = local.application_name
+  business_unit       = var.business_unit
   data_classification = local.data_classification
 
   enable_management_lock = true
@@ -45,7 +38,7 @@ module "log_analytics" {
   environment         = local.environment
   retention_in_days   = 90
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 # --- Network ---
@@ -66,7 +59,7 @@ module "virtual_network" {
     hub_vnet_name           = var.hub_vnet_name
   }
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 module "subnet_app" {
@@ -114,7 +107,7 @@ module "network_security_group_app" {
     }
   ]
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 module "route_table_spoke" {
@@ -135,7 +128,7 @@ module "route_table_spoke" {
     }
   ] : []
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 # --- Storage ---
@@ -153,7 +146,7 @@ module "storage_account" {
   shared_access_key_enabled       = false
 
   log_analytics_workspace_id = module.log_analytics.id
-  tags                       = local.platform_tags
+  tags                       = module.resource_group.tags
 }
 
 # --- Identity ---
@@ -183,7 +176,7 @@ module "key_vault" {
   soft_delete_retention_days    = 90
   log_analytics_workspace_id    = module.log_analytics.id
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 module "private_endpoint_key_vault" {
@@ -199,7 +192,7 @@ module "private_endpoint_key_vault" {
   subresource_names              = ["vault"]
   private_dns_zone_ids             = var.private_dns_zone_keyvault_id != null ? [var.private_dns_zone_keyvault_id] : []
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 module "private_endpoint_storage" {
@@ -215,7 +208,7 @@ module "private_endpoint_storage" {
   subresource_names              = ["blob"]
   private_dns_zone_ids             = var.private_dns_zone_blob_id != null ? [var.private_dns_zone_blob_id] : []
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
 
 # --- RBAC (least privilege — no Contributor) ---
@@ -261,7 +254,8 @@ module "linux_vm" {
   user_assigned_identity_ids = [module.app_identity.id]
   log_analytics_workspace_guid = module.log_analytics.workspace_id
 
-  tags = local.platform_tags
+  tags = module.resource_group.tags
 }
+
 
 

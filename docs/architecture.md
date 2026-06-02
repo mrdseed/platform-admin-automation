@@ -70,12 +70,14 @@ flowchart TB
 
 | Management Group | Subscription | Purpose |
 |------------------|--------------|---------|
-| `mg-platform` | `sub-platform-shared` | Hub, DNS, firewall, monitoring |
+| `mg-connectivity` | `sub-connectivity` | Hub, DNS, firewall, Bastion, ExpressRoute |
+| `mg-management` | `sub-management` | Log Analytics, automation, Terraform state |
+| `mg-shared` | `sub-shared` | Shared Key Vault, compute gallery |
 | `mg-nonprod` | `sub-workload-dev` | Development workloads |
 | `mg-nonprod` | `sub-workload-qa` | QA / pre-production |
 | `mg-prod` | `sub-workload-prod` | Production workloads |
 
-Platform team holds `Owner` on platform subscription; workload teams receive scoped `Contributor` on spoke resource groups only.
+See [Platform Governance](platform-governance.md) for subscription boundaries and RBAC model.
 
 ## Network Design
 

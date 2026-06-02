@@ -2,6 +2,8 @@
 
 Platform security standards for Azure infrastructure, access management, and Linux image lifecycle.
 
+> **Full governance framework:** [Platform Governance](platform-governance.md) — mandatory tags, naming, multi-subscription layout, state backend, guardrails, network, identity, and operations.
+
 ## Document Control
 
 | Field | Value |

@@ -21,6 +21,11 @@ variable "owner_email" {
   default = "platform-team@example.com"
 }
 
+variable "business_unit" {
+  type    = string
+  default = "engineering"
+}
+
 variable "hub_vnet_id" {
   type = string
 }

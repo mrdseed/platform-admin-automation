@@ -28,20 +28,26 @@ Region codes: `eus2` (East US 2), `wus2` (West US 2). Environment: `dev`, `qa`, 
 
 ## 3. Tagging Policy
 
-Mandatory tags (enforced by Azure Policy `require-mandatory-tags`):
+Mandatory tags (enforced by Azure Policy `platform-mandatory-tags`):
+
+| Tag Key | Source |
+|---------|--------|
+| `environment` | Module variable |
+| `application` | Module variable |
+| `owner` | Module variable |
+| `cost-center` | Module variable |
+| `data-classification` | Module variable |
+| `managed-by` | `terraform` (module default) |
+| `business-unit` | Module variable |
 
 ```hcl
-tags = {
-  Environment         = var.environment
-  CostCenter          = var.cost_center
-  Owner               = var.owner_email
-  Application         = var.application_name
-  ManagedBy           = "terraform"
-  DataClassification  = var.data_classification
-}
+# Applied automatically by resource-group module
+tags = module.resource_group.tags
 ```
 
-Optional but recommended: `BackupTier`, `PatchGroup`, `ExpirationDate` (for non-prod).
+Full standard: [Platform Governance](platform-governance.md#1-mandatory-tags)
+
+Optional recommended tags: `patch-group`, `backup-tier`, `expiration-date` (non-prod).
 
 ## 4. Security Standards
 

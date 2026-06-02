@@ -135,16 +135,19 @@ GitLab CI equivalents are documented in [docs/platform-principles.md](docs/platf
 
 ## Tagging Standard
 
-All resources inherit mandatory tags enforced via module defaults and Azure Policy:
+All resources inherit mandatory tags via the resource-group module and Azure Policy:
 
-| Tag | Example | Required |
-|-----|---------|----------|
-| `Environment` | `dev`, `qa`, `prod` | Yes |
-| `CostCenter` | `CC-1042` | Yes |
-| `Owner` | `platform-team@example.com` | Yes |
-| `Application` | `platform-sftp` | Yes |
-| `ManagedBy` | `terraform` | Yes |
-| `DataClassification` | `internal`, `confidential` | Yes |
+| Tag Key | Example | Required |
+|---------|---------|----------|
+| `environment` | `dev`, `qa`, `prod` | Yes |
+| `application` | `platform-sftp` | Yes |
+| `owner` | `platform-team@example.com` | Yes |
+| `cost-center` | `CC-1042` | Yes |
+| `data-classification` | `internal`, `confidential` | Yes |
+| `managed-by` | `terraform` | Yes |
+| `business-unit` | `engineering` | Yes |
+
+See [Platform Governance](docs/platform-governance.md).
 
 ## Security Posture
 
@@ -160,7 +163,9 @@ All resources inherit mandatory tags enforced via module defaults and Azure Poli
 
 ## Operations
 
-- [Security & Governance](docs/security-governance.md) — platform security standards
+- [Platform Governance](docs/platform-governance.md) — tagging, naming, subscriptions, guardrails
+- [Security & Governance](docs/security-governance.md) — security standards
+- [Backend State Governance](docs/backend-state-governance.md) — remote state access
 - [Operational Runbook](docs/runbook.md) — incident response, deployment, rollback
 - [Platform Principles](docs/platform-principles.md) — engineering standards
 - [Project Roadmap](docs/project-roadmap.md) — planned capabilities

@@ -27,8 +27,6 @@ locals {
   environment         = var.environment
   application_name    = "platform-baseline"
   data_classification = var.environment == "prod" ? "confidential" : "internal"
-
-  platform_tags = module.resource_group.tags
 }
 
 # -----------------------------------------------------------------------------
@@ -44,6 +42,7 @@ module "resource_group" {
   cost_center         = var.cost_center
   owner_email         = var.owner_email
   application_name    = local.application_name
+  business_unit       = var.business_unit
   data_classification = local.data_classification
 
   enable_management_lock = var.environment == "prod"

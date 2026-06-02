@@ -1,11 +1,12 @@
 locals {
   mandatory_tags = {
-    Environment        = var.environment
-    CostCenter         = var.cost_center
-    Owner              = var.owner_email
-    Application        = var.application_name
-    ManagedBy          = "terraform"
-    DataClassification = var.data_classification
+    environment         = var.environment
+    application         = var.application_name
+    owner               = var.owner_email
+    cost-center         = var.cost_center
+    data-classification = var.data_classification
+    managed-by          = "terraform"
+    business-unit       = var.business_unit
   }
 
   tags = merge(local.mandatory_tags, var.additional_tags)

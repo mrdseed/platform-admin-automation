@@ -197,7 +197,22 @@ dev (auto apply on merge) → qa (manual approval) → prod (change ticket + 2 a
 
 ---
 
-## 9. Contacts
+## 9. Operational Governance
+
+| Activity | Standard |
+|----------|----------|
+| Production change | Pull request + pipeline apply only — no portal |
+| Approval | 2 reviewers + change ticket for prod |
+| Validation | [validation.yml](../.github/workflows/validation.yml) must pass |
+| Access change | PR to [users-groups.yml](../security/access-management/users-groups.yml) |
+| State access | Pipeline OIDC only — break-glass per [backend-state-governance.md](backend-state-governance.md) |
+| Drift | Corrected on next pipeline run or treated as incident |
+
+Full framework: [Platform Governance](platform-governance.md#8-operational-governance)
+
+---
+
+## 10. Contacts
 
 | Role | Contact |
 |------|---------|
@@ -208,7 +223,7 @@ dev (auto apply on merge) → qa (manual approval) → prod (change ticket + 2 a
 
 ---
 
-## 10. Revision History
+## 11. Revision History
 
 | Date | Author | Change |
 |------|--------|--------|

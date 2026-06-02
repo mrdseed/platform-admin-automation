@@ -1,43 +1,75 @@
 # Access Management — Source of Truth
 
-This file defines Entra ID groups, membership rules, and Azure RBAC assignments enforced by the access-sync pipeline.
+Entra ID groups, users, and RBAC assignments enforced by the access-sync pipeline.
+Subscription boundaries align with [Platform Governance](../../docs/platform-governance.md#3-multi-subscription-governance).
 
-# Schema version for pipeline validation
 apiVersion: platform.example/v1
 kind: AccessCatalog
 metadata:
   name: platform-access-catalog
   owner: platform-team@example.com
 
+subscriptions:
+  connectivity:
+    id: "00000000-0000-0000-0000-000000000010"
+    name: sub-connectivity
+    purpose: Hub, firewall, Bastion, private DNS, ExpressRoute
+  management:
+    id: "00000000-0000-0000-0000-000000000011"
+    name: sub-management
+    purpose: Log Analytics, automation, Terraform state storage
+  shared:
+    id: "00000000-0000-0000-0000-000000000012"
+    name: sub-shared
+    purpose: Shared Key Vault, compute gallery, platform assets
+  workload_dev:
+    id: "00000000-0000-0000-0000-000000000001"
+    name: sub-workload-dev
+    purpose: Development workloads
+  workload_qa:
+    id: "00000000-0000-0000-0000-000000000003"
+    name: sub-workload-qa
+    purpose: QA workloads
+  workload_prod:
+    id: "00000000-0000-0000-0000-000000000004"
+    name: sub-workload-prod
+    purpose: Production workloads
+
 groups:
   - name: grp-platform-admins
-    description: Platform engineers with full landing zone deploy rights (non-prod)
-    entra_object_id: "00000000-0000-0000-0000-000000000010"
+    description: Platform engineers — deploy to non-prod subscriptions only
+    entra_object_id: "00000000-0000-0000-0000-000000000020"
     members:
       - user: alice.admin@example.com
       - user: bob.admin@example.com
 
   - name: grp-platform-readers
-    description: Read-only visibility across platform subscriptions
-    entra_object_id: "00000000-0000-0000-0000-000000000011"
+    description: Read-only across all platform subscriptions
+    entra_object_id: "00000000-0000-0000-0000-000000000021"
     members:
       - group: grp-security-audit
 
   - name: grp-security-audit
-    description: Security team — audit and compliance review
-    entra_object_id: "00000000-0000-0000-0000-000000000012"
+    description: Security audit — Reader on subscriptions, Key Vault Reader on vaults
+    entra_object_id: "00000000-0000-0000-0000-000000000022"
     members:
       - user: audit.lead@example.com
 
   - name: grp-app-prod-operators
-    description: Application team operators — prod resource group scoped
-    entra_object_id: "00000000-0000-0000-0000-000000000013"
+    description: App team — VM User Login on prod workload RG only
+    entra_object_id: "00000000-0000-0000-0000-000000000023"
     members:
       - user: app.owner@example.com
 
+  - name: grp-break-glass
+    description: PIM-eligible emergency access — not for routine deployment
+    entra_object_id: "00000000-0000-0000-0000-000000000024"
+    members: []
+
 service_principals:
   - name: sp-platform-tf-dev
-    object_id: "00000000-0000-0000-0000-000000000020"
+    object_id: "00000000-0000-0000-0000-000000000030"
+    subscription: workload_dev
     roles:
       - role: PlatformDeploy-Network
         scope: /subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-platform-shared-dev-eus2-001
@@ -45,9 +77,22 @@ service_principals:
         scope: /subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-platform-shared-dev-eus2-001
       - role: PlatformDeploy-KeyVault
         scope: /subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-platform-shared-dev-eus2-001
+      - role: Storage Blob Data Contributor
+        scope: /subscriptions/00000000-0000-0000-0000-000000000011/resourceGroups/rg-platform-tfstate-eus2-001/providers/Microsoft.Storage/storageAccounts/stplatformtf001/blobServices/default/containers/tfstate
+        description: Dev state prefix read/write only
+
+  - name: sp-platform-tf-qa
+    object_id: "00000000-0000-0000-0000-000000000031"
+    subscription: workload_qa
+    roles:
+      - role: PlatformDeploy-Network
+        scope: /subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/rg-platform-shared-qa-eus2-001
+      - role: PlatformDeploy-Compute
+        scope: /subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/rg-platform-shared-qa-eus2-001
 
   - name: sp-platform-tf-prod
-    object_id: "00000000-0000-0000-0000-000000000021"
+    object_id: "00000000-0000-0000-0000-000000000032"
+    subscription: workload_prod
     roles:
       - role: PlatformDeploy-Network
         scope: /subscriptions/00000000-0000-0000-0000-000000000004/resourceGroups/rg-platform-shared-prod-eus2-001
@@ -55,17 +100,11 @@ service_principals:
         scope: /subscriptions/00000000-0000-0000-0000-000000000004/resourceGroups/rg-platform-shared-prod-eus2-001
       - role: PlatformDeploy-KeyVault
         scope: /subscriptions/00000000-0000-0000-0000-000000000004/resourceGroups/rg-platform-shared-prod-eus2-001
-      - role: PlatformDeploy-Storage
-        scope: /subscriptions/00000000-0000-0000-0000-000000000004/resourceGroups/rg-platform-sftp-prod-eus2-001
-      - role: PlatformDeploy-Monitoring
-        scope: /subscriptions/00000000-0000-0000-0000-000000000004
+      - role: Storage Blob Data Contributor
+        scope: /subscriptions/00000000-0000-0000-0000-000000000011/resourceGroups/rg-platform-tfstate-eus2-001/providers/Microsoft.Storage/storageAccounts/stplatformtf001/blobServices/default/containers/tfstate
+        description: Prod state prefix — prod pipeline only
 
 role_assignments:
-  - principal: grp-platform-admins
-    principal_type: Group
-    role: Reader
-    scope: /subscriptions/00000000-0000-0000-0000-000000000001
-
   - principal: grp-platform-readers
     principal_type: Group
     role: Reader
@@ -78,14 +117,12 @@ role_assignments:
 
   - principal: grp-app-prod-operators
     principal_type: Group
-    role: Virtual Machine User Login
+    role: "Virtual Machine User Login"
     scope: /subscriptions/00000000-0000-0000-0000-000000000004/resourceGroups/rg-platform-shared-prod-eus2-001
 
-# Explicit deny patterns — pipeline validates these are never assigned
 denied_roles:
   - Owner
   - Contributor
   - User Access Administrator
 
-# Exceptions require ticket reference and expiration
 exceptions: []

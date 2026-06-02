@@ -25,6 +25,11 @@ variable "owner_email" {
   default = "platform-team@example.com"
 }
 
+variable "business_unit" {
+  type    = string
+  default = "engineering"
+}
+
 variable "vnet_address_space" {
   description = "Spoke VNet CIDR — isolated from hub in this standalone example"
   type        = string
