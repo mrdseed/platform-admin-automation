@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-labelledby="title desc">
+  <title id="title">Acme Corp Azure Hub-and-Spoke Topology</title>
+  <desc id="desc">On-premises connectivity through ExpressRoute to a hub subscription with Azure Firewall, Bastion, and private DNS. Dev, QA, and Prod workload spokes peer to the hub and route egress through the firewall.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#505050"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#0078d4"/>
+    </marker>
+    <style>
+      .box { fill: #f3f9fd; stroke: #0078d4; stroke-width: 1.5; rx: 6; }
+      .box-hub { fill: #e8f4fc; stroke: #005a9e; stroke-width: 2; rx: 8; }
+      .box-onprem { fill: #fafafa; stroke: #666; stroke-width: 1.5; rx: 6; }
+      .sub-label { font: 600 11px 'Segoe UI', Arial, sans-serif; fill: #333; }
+      .title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #0078d4; }
+      .label { font: 12px 'Segoe UI', Arial, sans-serif; fill: #222; }
+      .small { font: 10px 'Segoe UI', Arial, sans-serif; fill: #555; }
+      .edge-label { font: 10px 'Segoe UI', Arial, sans-serif; fill: #505050; }
+      .line { stroke: #888; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .line-peering { stroke: #0078d4; stroke-width: 1.5; fill: none; stroke-dasharray: 6 3; marker-end: url(#arrow-blue); }
+      .line-udr { stroke: #c50f1f; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <!-- On-Premises -->
+  <rect class="box-onprem" x="30" y="40" width="180" height="90"/>
+  <text class="title" x="120" y="68" text-anchor="middle">On-Premises</text>
+  <text class="label" x="120" y="90" text-anchor="middle">Acme Corp DC</text>
+  <text class="small" x="120" y="108" text-anchor="middle">ExpressRoute Circuit</text>
+
+  <!-- Hub Subscription -->
+  <rect class="box-hub" x="260" y="20" width="440" height="200"/>
+  <text class="sub-label" x="480" y="42" text-anchor="middle">sub-acme-connectivity</text>
+  <text class="title" x="480" y="62" text-anchor="middle">Hub VNet  vnet-hub-eus2-001 (10.0.0.0/16)</text>
+
+  <rect class="box" x="280" y="78" width="115" height="52"/>
+  <text class="label" x="337" y="100" text-anchor="middle">Azure</text>
+  <text class="label" x="337" y="116" text-anchor="middle">Firewall</text>
+
+  <rect class="box" x="410" y="78" width="115" height="52"/>
+  <text class="label" x="467" y="100" text-anchor="middle">Azure</text>
+  <text class="label" x="467" y="116" text-anchor="middle">Bastion</text>
+
+  <rect class="box" x="540" y="78" width="140" height="52"/>
+  <text class="label" x="610" y="100" text-anchor="middle">Private DNS</text>
+  <text class="label" x="610" y="116" text-anchor="middle">Zones</text>
+
+  <rect class="box" x="350" y="148" width="260" height="52"/>
+  <text class="label" x="480" y="170" text-anchor="middle">ExpressRoute Gateway</text>
+  <text class="small" x="480" y="186" text-anchor="middle">Gateway transit to spokes</text>
+
+  <!-- Log Analytics (management sub) -->
+  <rect class="box" x="720" y="78" width="200" height="72"/>
+  <text class="sub-label" x="820" y="98" text-anchor="middle">sub-acme-management</text>
+  <text class="label" x="820" y="120" text-anchor="middle">law-platform-eus2-001</text>
+  <text class="small" x="820" y="136" text-anchor="middle">Log Analytics (shared)</text>
+
+  <!-- Spokes -->
+  <rect class="box" x="60" y="320" width="240" height="120"/>
+  <text class="sub-label" x="180" y="342" text-anchor="middle">sub-acme-dev</text>
+  <text class="title" x="180" y="364" text-anchor="middle">Dev Spoke</text>
+  <text class="label" x="180" y="386" text-anchor="middle">vnet-spoke-dev-eus2-001</text>
+  <text class="small" x="180" y="404" text-anchor="middle">10.1.0.0/16</text>
+  <text class="small" x="180" y="422" text-anchor="middle">App · Data · Key Vault PE</text>
+
+  <rect class="box" x="360" y="320" width="240" height="120"/>
+  <text class="sub-label" x="480" y="342" text-anchor="middle">sub-acme-qa</text>
+  <text class="title" x="480" y="364" text-anchor="middle">QA Spoke</text>
+  <text class="label" x="480" y="386" text-anchor="middle">vnet-spoke-qa-eus2-001</text>
+  <text class="small" x="480" y="404" text-anchor="middle">10.2.0.0/16</text>
+  <text class="small" x="480" y="422" text-anchor="middle">App · Data · Key Vault PE</text>
+
+  <rect class="box" x="660" y="320" width="260" height="120"/>
+  <text class="sub-label" x="790" y="342" text-anchor="middle">sub-acme-prod</text>
+  <text class="title" x="790" y="364" text-anchor="middle">Prod Spoke</text>
+  <text class="label" x="790" y="386" text-anchor="middle">vnet-spoke-prod-eus2-001</text>
+  <text class="small" x="790" y="404" text-anchor="middle">10.3.0.0/16</text>
+  <text class="small" x="790" y="422" text-anchor="middle">SFTP · App · Key Vault PE</text>
+
+  <!-- Connections -->
+  <line class="line" x1="210" y1="85" x2="260" y2="174"/>
+  <line class="line" x1="610" y1="130" x2="720" y2="114"/>
+
+  <!-- Peering (hub to spokes) -->
+  <path class="line-peering" d="M 337 220 L 180 320"/>
+  <path class="line-peering" d="M 467 220 L 480 320"/>
+  <path class="line-peering" d="M 610 220 L 790 320"/>
+  <text class="edge-label" x="480" y="278" text-anchor="middle">VNet peering + gateway transit</text>
+
+  <!-- UDR egress -->
+  <path class="line-udr" d="M 180 440 L 337 130"/>
+  <path class="line-udr" d="M 480 440 L 467 130"/>
+  <path class="line-udr" d="M 790 440 L 610 130"/>
+  <text class="edge-label" x="480" y="520" text-anchor="middle">Default route (UDR) ’ Azure Firewall  single egress</text>
+
+  <!-- Legend -->
+  <rect x="30" y="560" width="900" height="44" fill="#fafafa" stroke="#ddd" rx="4"/>
+  <line x1="50" y1="582" x2="90" y2="582" stroke="#0078d4" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <text class="small" x="98" y="586">Peering</text>
+  <line x1="180" y1="582" x2="220" y2="582" stroke="#c50f1f" stroke-width="1.5"/>
+  <text class="small" x="228" y="586">Egress UDR</text>
+  <line x1="320" y1="582" x2="360" y2="582" stroke="#888" stroke-width="1.5"/>
+  <text class="small" x="368" y="586">ExpressRoute / diagnostics</text>
+  <text class="small" x="720" y="586">Source: diagrams/hub-spoke-topology.mmd · Acme Corp (fictional)</text>
+</svg>
