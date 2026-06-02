@@ -1,0 +1,44 @@
+%% Hub-and-Spoke Topology — Azure Landing Zone
+
+flowchart TB
+    subgraph OnPrem["On-Premises"]
+        DC["Corporate DC"]
+        ER_GW["ExpressRoute Circuit"]
+    end
+
+    subgraph HubSub["Subscription: sub-platform-shared"]
+        subgraph HubVNet["vnet-hub-eus2-001 — 10.0.0.0/16"]
+            AFW["afw-hub-eus2-001<br/>Azure Firewall"]
+            BAS["bas-hub-eus2-001<br/>Azure Bastion"]
+            DNS["Private DNS Zones"]
+            ER["ExpressRoute Gateway"]
+        end
+        LAW["law-platform-eus2-001<br/>Log Analytics"]
+    end
+
+    subgraph DevSub["Subscription: sub-workload-dev"]
+        DevVNet["vnet-spoke-dev-eus2-001<br/>10.1.0.0/16"]
+    end
+
+    subgraph QASub["Subscription: sub-workload-qa"]
+        QAVNet["vnet-spoke-qa-eus2-001<br/>10.2.0.0/16"]
+    end
+
+    subgraph ProdSub["Subscription: sub-workload-prod"]
+        ProdVNet["vnet-spoke-prod-eus2-001<br/>10.3.0.0/16"]
+        SFTP["stplatformsftpprod001<br/>SFTP Platform"]
+    end
+
+    DC --- ER_GW
+    ER_GW --- ER
+    HubVNet --- LAW
+
+    HubVNet <-->|"Peering + Gateway Transit"| DevVNet
+    HubVNet <-->|"Peering + Gateway Transit"| QAVNet
+    HubVNet <-->|"Peering + Gateway Transit"| ProdVNet
+
+    DevVNet -->|"UDR via AFW"| AFW
+    QAVNet -->|"UDR via AFW"| AFW
+    ProdVNet -->|"UDR via AFW"| AFW
+
+    ProdVNet --- SFTP

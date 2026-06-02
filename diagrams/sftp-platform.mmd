@@ -1,0 +1,17 @@
+%% SFTP Platform — Private B2B File Exchange
+
+sequenceDiagram
+    participant Partner as External Partner
+    participant DNS as Private DNS
+    participant PE as Private Endpoint
+    participant ST as Storage Account (SFTP)
+    participant LAW as Log Analytics
+
+    Partner->>DNS: Resolve sftp.internal.example
+    DNS-->>Partner: 10.3.240.x (PE IP)
+    Partner->>PE: SFTP connect (port 22)
+    PE->>ST: Forward via Private Link
+    ST-->>Partner: Auth challenge (SSH key)
+    Partner->>ST: Authenticated session
+    Partner->>ST: PUT file to container
+    ST->>LAW: StorageWrite / SFTP audit log

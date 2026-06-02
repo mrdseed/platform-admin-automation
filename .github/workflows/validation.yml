@@ -1,0 +1,175 @@
+name: Terraform Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+env:
+  TF_VERSION: "1.6.0"
+  TOFU_VERSION: "1.6.2"
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  fmt:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Terraform fmt
+        run: tofu fmt -check -recursive -diff terraform/
+
+  validate-modules:
+    name: Validate — ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    needs: fmt
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - resource-group
+          - virtual-network
+          - key-vault
+          - linux-vm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Init and Validate
+        working-directory: terraform/modules/${{ matrix.module }}
+        run: |
+          tofu init -backend=false
+          tofu validate
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    needs: fmt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.50.0
+
+      - name: Init TFLint
+        run: tflint --init
+        working-directory: terraform
+
+      - name: Run TFLint
+        run: tflint -f compact --recursive
+        working-directory: terraform
+
+  checkov:
+    name: Checkov Security Scan
+    runs-on: ubuntu-latest
+    needs: fmt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/
+          framework: terraform
+          soft_fail: true
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: Upload Checkov SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+          category: checkov-terraform
+
+  validate-environments:
+    name: Validate Environment — ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    needs: validate-modules
+    strategy:
+      matrix:
+        environment: [dev, qa, prod]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Init and Validate
+        working-directory: terraform/environments/${{ matrix.environment }}
+        run: |
+          tofu init -backend=false
+          tofu validate
+
+  plan-dev:
+    name: Plan — Dev (OIDC)
+    runs-on: ubuntu-latest
+    needs: [validate-environments, checkov]
+    if: github.event_name == 'pull_request'
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: Terraform Plan
+        working-directory: terraform/environments/dev
+        env:
+          TF_VAR_admin_ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7ci-validation-only-not-for-access"
+        run: |
+          tofu init
+          tofu plan -var-file=terraform.tfvars.example -input=false -no-color -out=tfplan 2>&1 | tee plan.txt || true
+
+      - name: Comment Plan on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.existsSync('terraform/environments/dev/plan.txt')
+              ? fs.readFileSync('terraform/environments/dev/plan.txt', 'utf8')
+              : 'Plan step skipped or unavailable.';
+            const body = `#### OpenTofu Plan — \`dev\`\n<details><summary>Show Plan</summary>\n\n\`\`\`hcl\n${plan.slice(0, 60000)}\n\`\`\`\n</details>`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

@@ -1,0 +1,20 @@
+%% CI/CD Pipeline — Platform Infrastructure Deployment
+
+flowchart LR
+    DEV["Developer PR"]
+    GH["GitHub Actions"]
+    FMT["tofu fmt -check"]
+    VAL["tofu validate"]
+    LINT["TFLint"]
+    CKV["Checkov"]
+    OIDC["Azure OIDC"]
+    PLAN["tofu plan"]
+    APPROVE["Manual Approval"]
+    APPLY["tofu apply"]
+    STATE["stplatformtf001<br/>Remote State"]
+
+    DEV --> GH
+    GH --> FMT --> VAL --> LINT --> CKV
+    CKV --> OIDC --> PLAN
+    PLAN --> APPROVE --> APPLY
+    APPLY --> STATE

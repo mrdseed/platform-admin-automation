@@ -1,0 +1,5 @@
+subscription_id = "00000000-0000-0000-0000-000000000003"
+tenant_id         = "00000000-0000-0000-0000-000000000000"
+
+hub_vnet_id        = "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-hub-network-eus2-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-eus2-001"
+pipeline_object_id = "00000000-0000-0000-0000-000000000002"

@@ -1,0 +1,23 @@
+%% Key Vault RBAC and Private Access Pattern
+
+flowchart TB
+    subgraph SpokeProd["Prod Spoke VNet"]
+        APP["Application VM<br/>User-Assigned MI"]
+        PE["Private Endpoint<br/>pe-kv-platform-prod-eus2-001"]
+        KV["kv-platform-prod-eus2-001<br/>RBAC Enabled"]
+    end
+
+    subgraph Hub["Hub"]
+        PDNS["privatelink.vaultcore.azure.net"]
+        LAW["Log Analytics"]
+    end
+
+    PIPE["Pipeline MI<br/>Key Vault Secrets Officer"]
+    AUDIT["Security Group<br/>Key Vault Reader"]
+
+    APP -->|"Secrets User"| KV
+    PIPE -->|"Secrets Officer"| KV
+    AUDIT -->|"Reader"| KV
+    PE --- KV
+    PE --- PDNS
+    KV -->|"AuditEvent logs"| LAW
