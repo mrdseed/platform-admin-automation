@@ -51,7 +51,7 @@ az network vnet peering list \
 az keyvault show -n kv-platform-prod-eus2-001 --query "properties.provisioningState"
 
 # SFTP endpoint (from jump host with PE DNS resolution)
-sftp -i ~/.ssh/platform_ops user@sftp.internal.example
+sftp -i ~/.ssh/platform_ops user@sftp.internal.acmecorp.com
 ```
 
 ---
@@ -78,7 +78,7 @@ sftp -i ~/.ssh/platform_ops user@sftp.internal.example
    - Attach temporary UDR bypass route on affected spoke (document in ticket)
    - Never leave bypass in place > 4 hours
 
-**Recovery verification:** Run synthetic probe from `vm-probe-prod-eus2-001` to `https://api.internal.example/health`
+**Recovery verification:** Run synthetic probe from `vm-probe-prod-eus2-001` to `https://api.internal.acmecorp.com/health`
 
 ---
 
@@ -217,8 +217,8 @@ Full framework: [Platform Governance](platform-governance.md#8-operational-gover
 | Role | Contact |
 |------|---------|
 | Platform On-Call | PagerDuty `platform-eng-primary` |
-| Cloud Architect | cloud-arch@example.com |
-| Security Operations | secops@example.com |
+| Cloud Architect | cloud-arch@acmecorp.com |
+| Security Operations | secops@acmecorp.com |
 | Azure Support | CSP portal — support contract on file |
 
 ---

@@ -26,7 +26,7 @@ module "resource_group" {
   location         = "eastus2"
   environment      = "prod"
   cost_center      = "CC-1042"
-  owner_email      = "platform-team@example.com"
+  owner_email      = "platform-team@acmecorp.com"
   application_name = "platform-app"
   business_unit    = "engineering"
   data_classification = "confidential"

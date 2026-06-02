@@ -18,7 +18,7 @@ variable "cost_center" {
 
 variable "owner_email" {
   type    = string
-  default = "platform-team@example.com"
+  default = "platform-team@acmecorp.com"
 }
 
 variable "business_unit" {

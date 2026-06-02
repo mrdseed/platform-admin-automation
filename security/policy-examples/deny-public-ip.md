@@ -74,7 +74,7 @@ exceptions:
     reason: "Legacy vendor integration — migration planned Q4 2026"
     ticket: CHG-12345
     expires: "2026-12-31"
-    approved_by: cloud-arch@example.com
+    approved_by: cloud-arch@acmecorp.com
 ```
 
 ## Terraform Alignment

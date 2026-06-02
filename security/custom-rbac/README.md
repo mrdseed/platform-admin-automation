@@ -28,14 +28,14 @@ Custom roles follow **least privilege**:
 Replace `{subscription-id}` and assignable scope before deployment:
 
 ```bash
-SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
+SUBSCRIPTION_ID="a1c0e000-0000-4000-8000-ac0000000000"
 RG_SCOPE="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/rg-platform-shared-prod-eus2-001"
 
 for role_file in deployment-sp-*.json; do
   az role definition create --role-definition "$role_file"
 done
 
-PIPELINE_SP_OBJECT_ID="00000000-0000-0000-0000-000000000002"
+PIPELINE_SP_OBJECT_ID="a1c0e002-0003-4000-8000-ac0000000002"
 
 az role assignment create \
   --assignee-object-id "$PIPELINE_SP_OBJECT_ID" \

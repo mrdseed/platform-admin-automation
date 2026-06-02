@@ -37,7 +37,7 @@ module "rg_sftp" {
   name                = "rg-platform-sftp-prod-eus2-001"
   environment         = "prod"
   cost_center         = "CC-1042"
-  owner_email         = "platform-team@example.com"
+  owner_email         = "platform-team@acmecorp.com"
   application_name    = "platform-sftp"
   data_classification = "confidential"
 
@@ -112,7 +112,7 @@ resource "azurerm_monitor_diagnostic_setting" "sftp" {
 1. Create dedicated container: `partner-{name}-inbound`
 2. Create local user with SSH key — store private key reference in Key Vault
 3. Assign container ACL: read/write scoped to partner container only
-4. Provide connection details: `sftp.internal.example` (private DNS CNAME)
+4. Provide connection details: `sftp.internal.acmecorp.com` (private DNS CNAME)
 5. Open change ticket and update CMDB
 
 ## Monitoring Queries

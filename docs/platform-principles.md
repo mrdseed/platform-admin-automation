@@ -45,7 +45,7 @@ Mandatory tags (enforced by Azure Policy `platform-mandatory-tags`):
 tags = module.resource_group.tags
 ```
 
-Full standard: [Platform Governance](platform-governance.md#1-mandatory-tags)
+Full standard: [Governance Model](governance-model.md#1-mandatory-tags)
 
 Optional recommended tags: `patch-group`, `backup-tier`, `expiration-date` (non-prod).
 

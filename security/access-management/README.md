@@ -4,7 +4,7 @@ Users, groups, and RBAC assignments are defined in [users-groups.yml](users-grou
 
 ## Subscription Boundaries
 
-Pipeline principals are scoped per workload subscription; state access is limited to `sub-management`. See the `subscriptions:` and `service_principals:` blocks in [users-groups.yml](users-groups.yml) and [Platform Governance](../../docs/platform-governance.md#3-multi-subscription-governance).
+Pipeline principals are scoped per workload subscription; state access is limited to `sub-acme-management`. See the `subscriptions:` and `service_principals:` blocks in [users-groups.yml](users-groups.yml) and [Platform Governance](../../docs/platform-governance.md#3-multi-subscription-governance).
 
 ## Principles
 

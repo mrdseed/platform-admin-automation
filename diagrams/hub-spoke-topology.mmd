@@ -2,11 +2,11 @@
 
 flowchart TB
     subgraph OnPrem["On-Premises"]
-        DC["Corporate DC"]
+        DC["Acme Corp DC"]
         ER_GW["ExpressRoute Circuit"]
     end
 
-    subgraph HubSub["Subscription: sub-platform-shared"]
+    subgraph HubSub["Subscription: sub-acme-connectivity"]
         subgraph HubVNet["vnet-hub-eus2-001 — 10.0.0.0/16"]
             AFW["afw-hub-eus2-001<br/>Azure Firewall"]
             BAS["bas-hub-eus2-001<br/>Azure Bastion"]
@@ -16,15 +16,15 @@ flowchart TB
         LAW["law-platform-eus2-001<br/>Log Analytics"]
     end
 
-    subgraph DevSub["Subscription: sub-workload-dev"]
+    subgraph DevSub["Subscription: sub-acme-dev"]
         DevVNet["vnet-spoke-dev-eus2-001<br/>10.1.0.0/16"]
     end
 
-    subgraph QASub["Subscription: sub-workload-qa"]
+    subgraph QASub["Subscription: sub-acme-qa"]
         QAVNet["vnet-spoke-qa-eus2-001<br/>10.2.0.0/16"]
     end
 
-    subgraph ProdSub["Subscription: sub-workload-prod"]
+    subgraph ProdSub["Subscription: sub-acme-prod"]
         ProdVNet["vnet-spoke-prod-eus2-001<br/>10.3.0.0/16"]
         SFTP["stplatformsftpprod001<br/>SFTP Platform"]
     end

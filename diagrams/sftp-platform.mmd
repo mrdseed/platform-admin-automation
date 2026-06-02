@@ -7,7 +7,7 @@ sequenceDiagram
     participant ST as Storage Account (SFTP)
     participant LAW as Log Analytics
 
-    Partner->>DNS: Resolve sftp.internal.example
+    Partner->>DNS: Resolve sftp.internal.acmecorp.com
     DNS-->>Partner: 10.3.240.x (PE IP)
     Partner->>PE: SFTP connect (port 22)
     PE->>ST: Forward via Private Link

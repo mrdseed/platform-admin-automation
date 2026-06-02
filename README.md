@@ -1,6 +1,15 @@
 # Platform Admin Automation
 
-Azure platform engineering repository for infrastructure-as-code, hub-and-spoke networking, identity-based security, VM standardization, and operational automation.
+Azure platform engineering repository for infrastructure-as-code, hub-and-spoke networking, identity-based security, VM standardization, and operational automation. Examples use a fictional enterprise tenant (**Acme Corp**) with realistic naming and subscription layout.
+
+## How to Read This Repo
+
+Reviewers can navigate in this order:
+
+1. **[docs/governance-model.md](docs/governance-model.md)** — start here for tags, naming, subscription boundaries, remote state, management-plane access, and Azure Policy guardrails
+2. **[examples/secure-platform-baseline/](examples/secure-platform-baseline/)** — end-to-end stack showing how modules compose into a secure spoke
+3. **[terraform/modules/](terraform/modules/)** — reusable building blocks; see [terraform/modules/README.md](terraform/modules/README.md) for the module index
+4. **[docs/runbook.md](docs/runbook.md)** — deployment workflow, incident response, and rollback procedures
 
 ## Scope
 
@@ -75,20 +84,9 @@ State is stored remotely in Azure Storage with OIDC-based pipeline authenticatio
 
 Production workloads run in **spoke** virtual networks peered to a central **hub** that hosts shared services (firewall, DNS, bastion, monitoring). Secrets flow through **Azure Key Vault** with RBAC—not access policies—and compute uses **user-assigned managed identities** for secret retrieval.
 
-```
-                    ┌─────────────────────────────────────┐
-                    │           Azure Hub VNet            │
-                    │  Firewall · Bastion · DNS · Logs  │
-                    └──────────────┬──────────────────────┘
-                                   │ VNet Peering
-              ┌────────────────────┼────────────────────┐
-              ▼                    ▼                    ▼
-        ┌───────────┐        ┌───────────┐        ┌───────────┐
-        │ Dev Spoke │        │ QA Spoke  │        │Prod Spoke │
-        └───────────┘        └───────────┘        └───────────┘
-```
+![Acme Corp hub-and-spoke topology](diagrams/hub-spoke-topology.svg)
 
-Detailed design: [docs/architecture.md](docs/architecture.md)
+Detailed design: [docs/architecture.md](docs/architecture.md) · Mermaid source: [diagrams/hub-spoke-topology.mmd](diagrams/hub-spoke-topology.mmd)
 
 ## Modules
 
@@ -141,7 +139,7 @@ All resources inherit mandatory tags via the resource-group module and Azure Pol
 |---------|---------|----------|
 | `environment` | `dev`, `qa`, `prod` | Yes |
 | `application` | `platform-sftp` | Yes |
-| `owner` | `platform-team@example.com` | Yes |
+| `owner` | `platform-team@acmecorp.com` | Yes |
 | `cost-center` | `CC-1042` | Yes |
 | `data-classification` | `internal`, `confidential` | Yes |
 | `managed-by` | `terraform` | Yes |
@@ -163,7 +161,8 @@ See [Platform Governance](docs/platform-governance.md).
 
 ## Operations
 
-- [Platform Governance](docs/platform-governance.md) — tagging, naming, subscriptions, guardrails
+- [Governance Model](docs/governance-model.md) — tags, naming, subscriptions, state, guardrails
+- [Platform Governance](docs/platform-governance.md) — extended governance reference
 - [Security & Governance](docs/security-governance.md) — security standards
 - [Backend State Governance](docs/backend-state-governance.md) — remote state access
 - [Operational Runbook](docs/runbook.md) — incident response, deployment, rollback

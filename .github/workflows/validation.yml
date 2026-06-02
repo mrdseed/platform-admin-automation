@@ -159,7 +159,7 @@ jobs:
 
       - name: Validate access catalog
         run: |
-          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'platform.example/v1'
+          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'acme.platform/v1'
           for role in Owner Contributor "User Access Administrator"; do
             if yq eval ".role_assignments[] | select(.role == \"$role\")" security/access-management/users-groups.yml | grep -q .; then
               echo "Denied role in catalog: $role"

@@ -1,6 +1,8 @@
 # Platform Governance
 
-Enterprise governance standards for Azure landing zones: tagging, naming, subscriptions, state backends, guardrails, network, identity, and operations.
+> Canonical governance reference: [docs/governance-model.md](governance-model.md)
+
+Enterprise governance standards for Azure landing zones. See [governance-model.md](governance-model.md) for the full model.
 
 ## Document Control
 
@@ -20,7 +22,7 @@ All resources created via platform modules must carry the following tags. Azure 
 |---------|-------------|---------|--------|
 | `environment` | Lifecycle stage | `dev`, `qa`, `prod`, `hub`, `shared` | Variable |
 | `application` | Workload or service identifier | `platform-sftp` | Variable |
-| `owner` | Contact email for the resource | `platform-team@example.com` | Variable |
+| `owner` | Contact email for the resource | `platform-team@acmecorp.com` | Variable |
 | `cost-center` | Chargeback code | `CC-1042` | Variable |
 | `data-classification` | Sensitivity level | `internal`, `confidential` | Variable |
 | `managed-by` | Provisioning tool | `terraform` | Module default |
@@ -37,7 +39,7 @@ module "resource_group" {
   name             = "rg-platform-app-prod-eus2-001"
   environment      = "prod"
   application_name = "platform-app"
-  owner_email      = "platform-team@example.com"
+  owner_email      = "platform-team@acmecorp.com"
   cost_center      = "CC-1042"
   business_unit    = "engineering"
   data_classification = "confidential"
@@ -101,12 +103,12 @@ Full reference: [platform-principles.md](platform-principles.md#2-naming-convent
 
 | Management Group | Subscription ID (example) | Purpose |
 |------------------|---------------------------|---------|
-| `mg-connectivity` | `sub-connectivity` | Hub VNet, firewall, ExpressRoute, Bastion, private DNS |
-| `mg-management` | `sub-management` | Log Analytics, automation accounts, state storage (optional) |
-| `mg-shared` | `sub-shared` | Shared Key Vault (optional), gallery images, patch storage |
-| `mg-nonprod` | `sub-workload-dev` | Development workloads |
-| `mg-nonprod` | `sub-workload-qa` | QA / pre-production |
-| `mg-prod` | `sub-workload-prod` | Production workloads |
+| `mg-connectivity` | `sub-acme-connectivity` | Hub VNet, firewall, ExpressRoute, Bastion, private DNS |
+| `mg-management` | `sub-acme-management` | Log Analytics, automation accounts, state storage (optional) |
+| `mg-shared` | `sub-acme-shared` | Shared Key Vault (optional), gallery images, patch storage |
+| `mg-nonprod` | `sub-acme-dev` | Development workloads |
+| `mg-nonprod` | `sub-acme-qa` | QA / pre-production |
+| `mg-prod` | `sub-acme-prod` | Production workloads |
 
 ### Separation Principles
 
@@ -114,7 +116,7 @@ Full reference: [platform-principles.md](platform-principles.md#2-naming-convent
 - Workload teams deploy only into their environment subscription via scoped pipeline principals
 - Central logging: diagnostic settings ship to `law-platform-eus2-001` in management or connectivity subscription
 - **Key Vault model:**
-  - *Central platform vault* — shared secrets (pipeline, monitoring) in `sub-shared`
+  - *Central platform vault* — shared secrets (pipeline, monitoring) in `sub-acme-shared`
   - *Per-workload vault* — application secrets in workload subscription (recommended for prod)
 - **RBAC boundaries:** no standing Owner on workload subscriptions; Reader for operators; custom deploy roles for pipelines
 

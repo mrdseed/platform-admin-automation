@@ -8,7 +8,7 @@ Standards for OpenTofu/Terraform remote state storage and access control.
 |---------|-------|
 | Name | `stplatformtf{env}001` (globally unique) |
 | Resource group | `rg-platform-tfstate-eus2-001` |
-| Subscription | `sub-management` (management plane) |
+| Subscription | `sub-acme-management` (management plane) |
 | Replication | GRS |
 | Public network access | **Disabled** |
 | Shared key access | Disabled for operators; pipeline uses OIDC + RBAC |

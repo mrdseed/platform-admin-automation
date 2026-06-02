@@ -8,7 +8,7 @@ Enforces mandatory platform tags on all indexed resources.
 |---------|------------|---------|
 | `environment` | `dev`, `qa`, `prod`, `hub`, `shared` | `prod` |
 | `application` | Non-empty string | `platform-sftp` |
-| `owner` | Valid email format | `platform-team@example.com` |
+| `owner` | Valid email format | `platform-team@acmecorp.com` |
 | `cost-center` | Pattern `CC-[0-9]{4}` | `CC-1042` |
 | `data-classification` | `public`, `internal`, `confidential`, `restricted` | `confidential` |
 | `managed-by` | `terraform` or `pipeline` | `terraform` |

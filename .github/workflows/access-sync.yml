@@ -29,7 +29,7 @@ jobs:
       - name: Validate YAML schema
         run: |
           test -f security/access-management/users-groups.yml
-          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'platform.example/v1'
+          yq eval '.apiVersion' security/access-management/users-groups.yml | grep -q 'acme.platform/v1'
           yq eval '.kind' security/access-management/users-groups.yml | grep -q 'AccessCatalog'
 
       - name: Reject denied roles in assignments

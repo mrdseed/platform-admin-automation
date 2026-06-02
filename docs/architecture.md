@@ -23,7 +23,9 @@ This document describes the Azure landing zone architecture implemented by the P
 
 ## High-Level Topology
 
-See [diagrams/hub-spoke-topology.mmd](../diagrams/hub-spoke-topology.mmd) for the canonical diagram.
+![Acme Corp hub-and-spoke topology](../diagrams/hub-spoke-topology.svg)
+
+See [diagrams/hub-spoke-topology.mmd](../diagrams/hub-spoke-topology.mmd) for the editable Mermaid source.
 
 ```mermaid
 flowchart TB
@@ -70,12 +72,12 @@ flowchart TB
 
 | Management Group | Subscription | Purpose |
 |------------------|--------------|---------|
-| `mg-connectivity` | `sub-connectivity` | Hub, DNS, firewall, Bastion, ExpressRoute |
-| `mg-management` | `sub-management` | Log Analytics, automation, Terraform state |
-| `mg-shared` | `sub-shared` | Shared Key Vault, compute gallery |
-| `mg-nonprod` | `sub-workload-dev` | Development workloads |
-| `mg-nonprod` | `sub-workload-qa` | QA / pre-production |
-| `mg-prod` | `sub-workload-prod` | Production workloads |
+| `mg-connectivity` | `sub-acme-connectivity` | Hub, DNS, firewall, Bastion, ExpressRoute |
+| `mg-management` | `sub-acme-management` | Log Analytics, automation, Terraform state |
+| `mg-shared` | `sub-acme-shared` | Shared Key Vault, compute gallery |
+| `mg-nonprod` | `sub-acme-dev` | Development workloads |
+| `mg-nonprod` | `sub-acme-qa` | QA / pre-production |
+| `mg-prod` | `sub-acme-prod` | Production workloads |
 
 See [Platform Governance](platform-governance.md) for subscription boundaries and RBAC model.
 

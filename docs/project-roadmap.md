@@ -90,4 +90,4 @@ Deliver a secure, automated, and observable Azure landing zone that enables appl
 3. Platform team triages in weekly grooming (Wednesdays)
 4. Approved items added to this roadmap with quarter assignment
 
-Contact: `platform-team@example.com`
+Contact: `platform-team@acmecorp.com`
